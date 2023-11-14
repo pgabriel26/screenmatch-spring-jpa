@@ -2,13 +2,17 @@ package br.com.alura.screenmatch.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 @Entity
 @Table(name = "series")
 public class Serie {
+
+    public Serie() {}
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ig;
+    private Long id;
     @Column(unique = true)
     private String titulo;
     private Integer totalTemporadas;
@@ -18,13 +22,19 @@ public class Serie {
     private String atores;
     private String capa;
     private String sinopse;
+    @Transient
+    private List<Episodio> episodios = new ArrayList<>();
 
-    public Long getIg() {
-        return ig;
+    public List<Episodio> getEpisodios() {
+        return episodios;
     }
 
-    public void setIg(Long ig) {
-        this.ig = ig;
+    public Long getIg() {
+        return id;
+    }
+
+    public void setIg(Long id) {
+        this.id = id;
     }
 
     public String getTitulo() {
