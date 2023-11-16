@@ -22,20 +22,22 @@ public class Serie {
     private String atores;
     private String capa;
     private String sinopse;
-    @Transient
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Episodio> episodios = new ArrayList<>();
 
     public List<Episodio> getEpisodios() {
         return episodios;
     }
 
-    public Long getIg() {
+    public Long getId() {
         return id;
     }
 
-    public void setIg(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
+
+
 
     public String getTitulo() {
         return titulo;
@@ -60,6 +62,7 @@ public class Serie {
         return genero;
     }
 
+
     public Serie(DadosSerie dados) {
         this.titulo = dados.titulo();
         this.totalTemporadas = dados.totalTemporadas();
@@ -70,6 +73,40 @@ public class Serie {
         this.sinopse = dados.sinopse();
     }
 
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setTotalTemporadas(Integer totalTemporadas) {
+        this.totalTemporadas = totalTemporadas;
+    }
+
+    public void setAvaliacao(Double avaliacao) {
+        this.avaliacao = avaliacao;
+    }
+
+    public void setGenero(Categoria genero) {
+        this.genero = genero;
+    }
+
+    public void setAtores(String atores) {
+        this.atores = atores;
+    }
+
+    public void setCapa(String capa) {
+        this.capa = capa;
+    }
+
+    public void setSinopse(String sinopse) {
+        this.sinopse = sinopse;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        episodios.forEach(e -> e.setSerie(this));
+        this.episodios = episodios;
+    }
+
+
     @Override
     public String toString() {
         return  "Genero=" + genero +
@@ -78,6 +115,7 @@ public class Serie {
                 ", avaliacao=" + avaliacao +
                 ", atores='" + atores + '\'' +
                 ", capa='" + capa + '\'' +
-                ", sinopse='" + sinopse + '\'';
+                ", sinopse='" + sinopse + '\'' +
+                ", episodios='" + episodios + '\'';
     }
 }
