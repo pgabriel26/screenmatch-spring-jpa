@@ -1,9 +1,6 @@
 package br.com.alura.screenmatch.principal;
 
-import br.com.alura.screenmatch.model.DadosSerie;
-import br.com.alura.screenmatch.model.DadosTemporada;
-import br.com.alura.screenmatch.model.Episodio;
-import br.com.alura.screenmatch.model.Serie;
+import br.com.alura.screenmatch.model.*;
 import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsumoApi;
 import br.com.alura.screenmatch.service.ConverteDados;
@@ -19,20 +16,26 @@ public class Principal {
     private ConverteDados conversor = new ConverteDados();
     private final String ENDERECO = "https://www.omdbapi.com/?t=";
     private final String API_KEY = "&apikey=6585022c";
-    private List<DadosSerie> dadosSeries= new ArrayList<>();
+    private List<DadosSerie> dadosSeries = new ArrayList<>();
     private SerieRepository repositorio;
     private List<Serie> series = new ArrayList<>();
+
     public Principal(SerieRepository repositorio) {
         this.repositorio = repositorio;
     }
 
     public void exibeMenu() {
         var opcao = -1;
-        while (opcao != 0 ) {
+        while (opcao != 0) {
             var menu = """
                     \n1 - Buscar séries
                     2 - Buscar episódios
                     3 - Listar series buscadas
+                    4 - Buscar Serie por Titulo
+                    5 - Buscar series por ator
+                    6 - top 5 series
+                    7 - buscar por categoria
+                    8 - busca por numero de temporados + avaliacao
                                     
                     0 - Sair                       
                     """;
@@ -51,6 +54,21 @@ public class Principal {
                 case 3:
                     listarSeriesBuscadas();
                     break;
+                case 4:
+                    buscarSeriePorTitulo();
+                    break;
+                case 5:
+                    buscarSeriesPorAtor();
+                    break;
+                case 6:
+                    buscarTop5Series();
+                    break;
+                case 7:
+                    buscarPorCategoria();
+                    break;
+                case 8:
+                    buscaPorNumeroDeTemporadasEAvaliacao();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
                     break;
@@ -67,7 +85,6 @@ public class Principal {
 //        dadosSeries.add(dados);
         System.out.println(dados);
     }
-
     private DadosSerie getDadosSerie() {
         System.out.println("Digite o nome da série para busca");
         var nomeSerie = leitura.nextLine();
@@ -76,7 +93,7 @@ public class Principal {
         return dados;
     }
 
-    private void buscarEpisodioPorSerie(){
+    private void buscarEpisodioPorSerie() {
         System.out.println("Escolha uma serie pelo nome: ");
         var nomeSerie = leitura.nextLine();
         listarSeriesBuscadas();
@@ -106,11 +123,68 @@ public class Principal {
         }
     }
 
-    private void listarSeriesBuscadas(){
+    private void listarSeriesBuscadas() {
         series = repositorio.findAll();
 
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
     }
+
+    private void buscarSeriePorTitulo() {
+        System.out.println("Escolha uma serie pelo nome: ");
+        var nomeSerie = leitura.nextLine();
+        Optional<Serie> serie = repositorio.findByTituloContainingIgnoreCase(nomeSerie);
+
+        if (serie.isPresent()) {
+            System.out.println("serie encontrada! = " + serie);
+        } else {
+            System.out.println("serie nao encontrada");
+        }
+    }
+
+    private void buscarSeriesPorAtor() {
+        System.out.println("Qual do nome da pessoa que atua?");
+        var nomeAtor = leitura.nextLine();
+        System.out.println("qual a avaliacao?");
+        var nota = leitura.nextDouble();
+        List<Serie> seriesEncontradas = repositorio.findByAtoresContainingIgnoreCaseAndAvaliacaoGreaterThanEqual(nomeAtor, nota);
+        if (!seriesEncontradas.isEmpty()) {
+            seriesEncontradas.forEach(s ->
+                    System.out.println(s.getTitulo() + " nota da serie: " + s.getAvaliacao()));
+        } else {
+            System.out.println("Atriz ou ator nao encontrado");
+        }
+    }
+    private void buscarTop5Series() {
+        List<Serie> topSeries = repositorio.findTop5ByOrderByAvaliacaoDesc();
+        topSeries.forEach(serie ->
+                System.out.println(serie.getTitulo() + " avaliacao = " + serie.getAvaliacao())
+        );
+    }
+
+
+    private void buscarPorCategoria() {
+        System.out.println("qual genero/categoria vc deseja buscar?");
+        var texto = leitura.nextLine();
+        Categoria categoria = Categoria.fromPortugues(texto);
+        List<Serie> seriesPorCategoria = repositorio.findByGenero(categoria);
+        System.out.println("Series do genero " + categoria + " encontradas ");
+        seriesPorCategoria.forEach(System.out::println);
+    }
+
+    private void buscaPorNumeroDeTemporadasEAvaliacao() {
+        System.out.println("Qual o numero maximo de temporadas voce deseja?");
+        var numeroTemporadas = leitura.nextInt();
+        System.out.println("qual a avaliacao?");
+        var nota = leitura.nextDouble();
+        List<Serie> seriesEncontradas = repositorio.seriesPorTemporadaEAvaliacao(numeroTemporadas, nota);
+        if (!seriesEncontradas.isEmpty()) {
+            seriesEncontradas.forEach(s ->
+                    System.out.println("A serie "+ s.getTitulo() + " tem "+ s.getTotalTemporadas() + " temporadas.  Nota da serie: " + s.getAvaliacao()));
+        } else {
+            System.out.println("serie nao encontrada");
+        }
+    }
+
 }
