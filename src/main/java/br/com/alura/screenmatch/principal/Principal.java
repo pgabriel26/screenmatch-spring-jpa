@@ -19,6 +19,7 @@ public class Principal {
     private List<DadosSerie> dadosSeries = new ArrayList<>();
     private SerieRepository repositorio;
     private List<Serie> series = new ArrayList<>();
+    private Optional<Serie> serie;
 
     public Principal(SerieRepository repositorio) {
         this.repositorio = repositorio;
@@ -36,6 +37,8 @@ public class Principal {
                     6 - top 5 series
                     7 - buscar por categoria
                     8 - busca por numero de temporados + avaliacao
+                    9 - busca por trecho de episodio
+                    10 - top 5 episodios
                                     
                     0 - Sair                       
                     """;
@@ -69,8 +72,14 @@ public class Principal {
                 case 8:
                     buscaPorNumeroDeTemporadasEAvaliacao();
                     break;
+                case 9:
+                    buscaEpisodioPorNome();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
+                    break;
+                case 10:
+                    buscaTop5Episodios();
                     break;
                 default:
                     System.out.println("Opção inválida");
@@ -85,6 +94,7 @@ public class Principal {
 //        dadosSeries.add(dados);
         System.out.println(dados);
     }
+
     private DadosSerie getDadosSerie() {
         System.out.println("Digite o nome da série para busca");
         var nomeSerie = leitura.nextLine();
@@ -134,10 +144,10 @@ public class Principal {
     private void buscarSeriePorTitulo() {
         System.out.println("Escolha uma serie pelo nome: ");
         var nomeSerie = leitura.nextLine();
-        Optional<Serie> serie = repositorio.findByTituloContainingIgnoreCase(nomeSerie);
+        serie = repositorio.findByTituloContainingIgnoreCase(nomeSerie);
 
         if (serie.isPresent()) {
-            System.out.println("serie encontrada! = " + serie);
+            System.out.println(serie);
         } else {
             System.out.println("serie nao encontrada");
         }
@@ -156,13 +166,13 @@ public class Principal {
             System.out.println("Atriz ou ator nao encontrado");
         }
     }
+
     private void buscarTop5Series() {
         List<Serie> topSeries = repositorio.findTop5ByOrderByAvaliacaoDesc();
         topSeries.forEach(serie ->
                 System.out.println(serie.getTitulo() + " avaliacao = " + serie.getAvaliacao())
         );
     }
-
 
     private void buscarPorCategoria() {
         System.out.println("qual genero/categoria vc deseja buscar?");
@@ -181,10 +191,33 @@ public class Principal {
         List<Serie> seriesEncontradas = repositorio.seriesPorTemporadaEAvaliacao(numeroTemporadas, nota);
         if (!seriesEncontradas.isEmpty()) {
             seriesEncontradas.forEach(s ->
-                    System.out.println("A serie "+ s.getTitulo() + " tem "+ s.getTotalTemporadas() + " temporadas.  Nota da serie: " + s.getAvaliacao()));
+                    System.out.println("A serie " + s.getTitulo() + " tem " + s.getTotalTemporadas() + " temporadas.  Nota da serie: " + s.getAvaliacao()));
         } else {
             System.out.println("serie nao encontrada");
         }
     }
+
+    private void buscaEpisodioPorNome() {
+        System.out.println("Digite um trecho do episodio que deseja buscar:");
+        var trecho = leitura.nextLine();
+        List<Episodio> episodiosEncontrados = repositorio.episodioPorTrecho(trecho);
+        if (!episodiosEncontrados.isEmpty()) {
+            episodiosEncontrados.forEach(episodio ->
+                    System.out.println(episodio.getTitulo() + " nota da episodio: " + episodio.getAvaliacao()));
+        } else {
+            System.out.println("Atriz ou ator nao encontrado");
+        }
+    }
+
+    private void buscaTop5Episodios() {
+        buscarSeriePorTitulo();
+        if (serie.isPresent()) {
+            Serie serieBuscada = serie.get();
+            List<Episodio> listaEpisodios = repositorio.top5Episodios(serieBuscada);
+            listaEpisodios.forEach(System.out::println);
+            System.out.println("fim");
+        }
+    }
+
 
 }
